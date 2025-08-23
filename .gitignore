@@ -3,3 +3,5 @@
 /ovmf
 *.iso
 *.hdd
+/.cache
+compile_commands.json
