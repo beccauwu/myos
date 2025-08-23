@@ -39,8 +39,8 @@ CFLAGS := -g -O2 -pipe
 # User controllable C preprocessor flags. We set none by default.
 CPPFLAGS :=
 
-# User controllable nasm flags.
-NASMFLAGS := -g
+# User controllable fasm flags.
+FASMFLAGS := -g
 
 # User controllable linker flags. We set none by default.
 LDFLAGS :=
@@ -65,7 +65,7 @@ endif
 override CFLAGS += \
     -Wall \
     -Wextra \
-    -std=gnu11 \
+    -std=gnu23 \
     -nostdinc \
     -ffreestanding \
     -fno-stack-protector \
@@ -94,11 +94,11 @@ override CPPFLAGS := \
     -MMD \
     -MP
 
-# Internal nasm flags that should not be changed by the user.
-override NASMFLAGS := \
-    -f elf64 \
-    $(patsubst -g,-g -F dwarf,$(NASMFLAGS)) \
-    -Wall
+# Internal fasm flags that should not be changed by the user. fasm hasn't got many flags so unused
+# override FASMFLAGS := \
+#     -f elf64 \
+#     $(patsubst -g,-g -F dwarf,$(FASMFLAGS)) \
+#     -Wall
 
 # Internal linker flags that should not be changed by the user.
 override LDFLAGS += \
@@ -114,8 +114,8 @@ override LDFLAGS += \
 override SRCFILES := $(shell find -L src cc-runtime/src -type f 2>/dev/null | LC_ALL=C sort)
 override CFILES := $(filter %.c,$(SRCFILES))
 override ASFILES := $(filter %.S,$(SRCFILES))
-override NASMFILES := $(filter %.asm,$(SRCFILES))
-override OBJ := $(addprefix obj/,$(CFILES:.c=.c.o) $(ASFILES:.S=.S.o) $(NASMFILES:.asm=.asm.o))
+override FASMFILES := $(filter %.asm,$(SRCFILES))
+override OBJ := $(addprefix obj/,$(CFILES:.c=.c.o) $(ASFILES:.S=.S.o) $(FASMFILES:.asm=.asm.o))
 override HEADER_DEPS := $(addprefix obj/,$(CFILES:.c=.c.d) $(ASFILES:.S=.S.d))
 
 # Default target. This must come first, before header dependencies.
@@ -140,10 +140,10 @@ obj/%.S.o: %.S GNUmakefile
 	mkdir -p "$(dir $@)"
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
-# Compilation rules for *.asm (nasm) files.
+# Compilation rules for *.asm (fasm) files.
 obj/%.asm.o: %.asm GNUmakefile
 	mkdir -p "$(dir $@)"
-	nasm $(NASMFLAGS) $< -o $@
+	fasm $< $@
 
 # Remove object files and the final executable.
 .PHONY: clean
