@@ -65,6 +65,8 @@ endif
 override CFLAGS += \
     -Wall \
     -Wextra \
+		-DPRINTF_DISABLE_SUPPORT_EXPONENTIAL \
+		-DPRINTF_DISABLE_SUPPORT_FLOAT \
     -std=gnu23 \
     -nostdinc \
     -ffreestanding \
@@ -88,6 +90,7 @@ override CFLAGS += \
 override CPPFLAGS := \
     -I src \
     -I limine-protocol/include \
+		-I external \
     -isystem freestnd-c-hdrs/include \
     $(CPPFLAGS) \
     -DLIMINE_API_REVISION=3 \
