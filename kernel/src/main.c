@@ -2,6 +2,7 @@
 #include <limine.h>
 #include <stddef.h>
 #include <printf.h>
+#include <stdint.h>
 // Set the base revision to 3, this is recommended as this is the latest
 // base revision described by the Limine boot protocol specification.
 // See specification for further info.  
@@ -103,6 +104,16 @@ void print(const char *s) {
   for (size_t i = 0; s[i] != '\0'; ++i)
     putchar(s[i]);
 }
+
+#define WIDTH 1280
+#define HEIGHT 800
+
+
+#define COLOUR(val) ((((uint64_t)(val) << 24) | ((val) >> 8)) & 0xffffffff)
+
+#define OLIVEC_IMPLEMENTATION
+#include <olive.c>
+#include "lotion_font.h"
 // The following will be our kernel's entry point.
 // If renaming kmain() to something else, make sure to change the
 // linker script accordingly.
@@ -124,7 +135,15 @@ void kmain(void) {
       framebuffer_request.response->framebuffers[0];
 
   fb_curr.framebuffer = framebuffer;
-  print("hello, world\n");
+  // printf("hello, world\n");
+  // printf("width: %ld, height: %ld\n", framebuffer->width, framebuffer->height);
+
+  Olivec_Canvas oc = olivec_canvas(framebuffer->address, framebuffer->width, framebuffer->height, (framebuffer->pitch / sizeof(uint32_t)));
+  //printf("0x%x -> 0x%x", 0xFF2D00BC, RGBA2ARGB(0xFF2D00BC));
+  olivec_fill(oc, COLOUR(0x181818FF));
+  olivec_text(oc, " !\"#$%&'()*+,-./"
+"0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`"
+"abcdefghijklmnopqrstuvwxyz{|}~", 0,0,lotion_font, 1, 0xffffffff);
   
   // Note: we assume the framebuffer model is RGB with 32-bit pixels.
   // for (size_t i = 0; i < 100; i++) {
