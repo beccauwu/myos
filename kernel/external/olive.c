@@ -46,357 +46,6 @@ typedef struct {
 #define OLIVEC_DEFAULT_FONT_HEIGHT 6
 #define OLIVEC_DEFAULT_FONT_WIDTH 6
 // TODO: allocate proper descender and acender areas for the default font
-static char olivec_default_glyphs[128][OLIVEC_DEFAULT_FONT_HEIGHT][OLIVEC_DEFAULT_FONT_WIDTH] = {
-    ['a'] = {
-        {0, 0, 0, 0, 0},
-        {0, 1, 1, 0, 0},
-        {0, 0, 0, 1, 0},
-        {0, 1, 1, 1, 0},
-        {1, 0, 0, 1, 0},
-        {0, 1, 1, 1, 0},
-    },
-    ['b'] = {
-        {1, 0, 0, 0, 0},
-        {1, 1, 1, 0, 0},
-        {1, 0, 0, 1, 0},
-        {1, 0, 0, 1, 0},
-        {1, 0, 0, 1, 0},
-        {1, 1, 1, 0, 0},
-    },
-    ['c'] = {
-        {0, 0, 0, 0, 0},
-        {0, 1, 1, 0, 0},
-        {1, 0, 0, 1, 0},
-        {1, 0, 0, 0, 0},
-        {1, 0, 0, 1, 0},
-        {0, 1, 1, 0, 0},
-    },
-    ['d'] = {
-        {0, 0, 0, 1, 0},
-        {0, 1, 1, 1, 0},
-        {1, 0, 0, 1, 0},
-        {1, 0, 0, 1, 0},
-        {1, 0, 0, 1, 0},
-        {0, 1, 1, 1, 0},
-    },
-    ['e'] = {
-        {0, 0, 0, 0, 0},
-        {0, 1, 1, 0, 0},
-        {1, 0, 0, 1, 0},
-        {1, 1, 1, 1, 0},
-        {1, 0, 0, 0, 0},
-        {0, 1, 1, 1, 0},
-    },
-    ['f'] = {
-        {0, 0, 1, 1, 0},
-        {0, 1, 0, 0, 0},
-        {1, 1, 1, 1, 0},
-        {0, 1, 0, 0, 0},
-        {0, 1, 0, 0, 0},
-        {0, 1, 0, 0, 0},
-    },
-    ['g'] = {
-        {0, 1, 1, 1, 0},
-        {1, 0, 0, 1, 0},
-        {1, 0, 0, 1, 0},
-        {0, 1, 1, 1, 0},
-        {0, 0, 0, 1, 0},
-        {0, 1, 1, 0, 0},
-    },
-    ['h'] = {
-        {1, 0, 0, 0, 0},
-        {1, 1, 1, 0, 0},
-        {1, 0, 0, 1, 0},
-        {1, 0, 0, 1, 0},
-        {1, 0, 0, 1, 0},
-        {1, 0, 0, 1, 0},
-    },
-    ['i'] = {
-        {0, 0, 1, 0, 0},
-        {0, 0, 0, 0, 0},
-        {0, 0, 1, 0, 0},
-        {0, 0, 1, 0, 0},
-        {0, 0, 1, 0, 0},
-        {0, 0, 1, 0, 0},
-    },
-    ['j'] = {
-        {0, 0, 1, 0, 0},
-        {0, 0, 0, 0, 0},
-        {0, 0, 1, 0, 0},
-        {0, 0, 1, 0, 0},
-        {1, 0, 1, 0, 0},
-        {0, 1, 1, 0, 0},
-    },
-    ['k'] = {
-        {1, 0, 0, 0, 0},
-        {1, 0, 0, 1, 0},
-        {1, 0, 1, 0, 0},
-        {1, 1, 0, 0, 0},
-        {1, 0, 1, 0, 0},
-        {1, 0, 0, 1, 0},
-    },
-    ['l'] = {
-        {0, 1, 1, 0, 0},
-        {0, 0, 1, 0, 0},
-        {0, 0, 1, 0, 0},
-        {0, 0, 1, 0, 0},
-        {0, 0, 1, 0, 0},
-        {0, 1, 1, 1, 0},
-    },
-    ['m'] = {
-        {0, 0, 0, 0, 0},
-        {0, 1, 0, 1, 1},
-        {1, 0, 1, 0, 1},
-        {1, 0, 1, 0, 1},
-        {1, 0, 1, 0, 1},
-        {1, 0, 1, 0, 1},
-    },
-    ['n'] = {
-        {0, 0, 0, 0, 0},
-        {0, 1, 1, 1, 0},
-        {1, 0, 0, 1, 0},
-        {1, 0, 0, 1, 0},
-        {1, 0, 0, 1, 0},
-        {1, 0, 0, 1, 0},
-    },
-    ['o'] = {
-        {0, 0, 0, 0, 0},
-        {0, 1, 1, 0, 0},
-        {1, 0, 0, 1, 0},
-        {1, 0, 0, 1, 0},
-        {1, 0, 0, 1, 0},
-        {0, 1, 1, 0, 0},
-    },
-    ['p'] = {
-        {1, 1, 1, 0, 0},
-        {1, 0, 0, 1, 0},
-        {1, 0, 0, 1, 0},
-        {1, 1, 1, 0, 0},
-        {1, 0, 0, 0, 0},
-        {1, 0, 0, 0, 0},
-    },
-    ['q'] = {
-        {0, 1, 1, 1, 0},
-        {1, 0, 0, 1, 0},
-        {1, 0, 0, 1, 0},
-        {0, 1, 1, 1, 0},
-        {0, 0, 0, 1, 0},
-        {0, 0, 0, 1, 0},
-    },
-    ['r'] = {
-        {0, 0, 0, 0, 0},
-        {1, 0, 1, 1, 0},
-        {1, 1, 0, 0, 1},
-        {1, 0, 0, 0, 0},
-        {1, 0, 0, 0, 0},
-        {1, 0, 0, 0, 0},
-    },
-    ['s'] = {
-        {0, 0, 0, 0, 0},
-        {0, 1, 1, 1, 0},
-        {1, 0, 0, 0, 0},
-        {1, 1, 1, 1, 0},
-        {0, 0, 0, 1, 0},
-        {1, 1, 1, 0, 0},
-    },
-    ['t'] = {
-        {0, 1, 0, 0, 0},
-        {0, 1, 0, 0, 0},
-        {1, 1, 1, 1, 0},
-        {0, 1, 0, 0, 0},
-        {0, 1, 0, 1, 0},
-        {0, 1, 1, 0, 0},
-    },
-    ['u'] = {
-        {0, 0, 0, 0, 0},
-        {1, 0, 0, 1, 0},
-        {1, 0, 0, 1, 0},
-        {1, 0, 0, 1, 0},
-        {1, 0, 0, 1, 0},
-        {0, 1, 1, 1, 0},
-    },
-    ['v'] = {
-        {0, 0, 0, 0, 0},
-        {1, 0, 0, 1, 0},
-        {1, 0, 0, 1, 0},
-        {1, 0, 0, 1, 0},
-        {1, 0, 0, 1, 0},
-        {0, 1, 1, 0, 0},
-    },
-    ['w'] = {
-        {0, 0, 0, 0, 0},
-        {1, 0, 0, 0, 1},
-        {1, 0, 1, 0, 1},
-        {1, 0, 1, 0, 1},
-        {1, 0, 1, 0, 1},
-        {0, 1, 1, 1, 1},
-    },
-    ['x'] = {
-        {0, 0, 0, 0, 0},
-        {1, 0, 1, 0, 0},
-        {1, 0, 1, 0, 0},
-        {0, 1, 0, 0, 0},
-        {1, 0, 1, 0, 0},
-        {1, 0, 1, 0, 0},
-    },
-    ['y'] = {
-        {0, 0, 0, 0, 0},
-        {1, 0, 1, 0, 0},
-        {1, 0, 1, 0, 0},
-        {1, 0, 1, 0, 0},
-        {0, 1, 0, 0, 0},
-        {0, 1, 0, 0, 0},
-    },
-    ['z'] = {
-        {0, 0, 0, 0, 0},
-        {1, 1, 1, 1, 0},
-        {0, 0, 0, 1, 0},
-        {0, 1, 1, 0, 0},
-        {1, 0, 0, 0, 0},
-        {1, 1, 1, 1, 0},
-    },
-
-    ['A'] = {0},
-    ['B'] = {0},
-    ['C'] = {0},
-    ['D'] = {0},
-    ['E'] = {0},
-    ['F'] = {0},
-    ['G'] = {0},
-    ['H'] = {0},
-    ['I'] = {0},
-    ['J'] = {0},
-    ['K'] = {0},
-    ['L'] = {0},
-    ['M'] = {0},
-    ['N'] = {0},
-    ['O'] = {0},
-    ['P'] = {0},
-    ['Q'] = {0},
-    ['R'] = {0},
-    ['S'] = {0},
-    ['T'] = {0},
-    ['U'] = {0},
-    ['V'] = {0},
-    ['W'] = {0},
-    ['X'] = {0},
-    ['Y'] = {0},
-    ['Z'] = {0},
-
-    ['0'] = {
-        {0, 1, 1, 0, 0},
-        {1, 0, 0, 1, 0},
-        {1, 0, 0, 1, 0},
-        {1, 0, 0, 1, 0},
-        {1, 0, 0, 1, 0},
-        {0, 1, 1, 0, 0},
-    },
-    ['1'] = {
-        {0, 0, 1, 0, 0},
-        {0, 1, 1, 0, 0},
-        {0, 0, 1, 0, 0},
-        {0, 0, 1, 0, 0},
-        {0, 0, 1, 0, 0},
-        {0, 1, 1, 1, 0},
-    },
-    ['2'] = {
-        {0, 1, 1, 0, 0},
-        {1, 0, 0, 1, 0},
-        {0, 0, 0, 1, 0},
-        {0, 1, 1, 0, 0},
-        {1, 0, 0, 0, 0},
-        {1, 1, 1, 1, 0},
-    },
-    ['3'] = {
-        {0, 1, 1, 0, 0},
-        {1, 0, 0, 1, 0},
-        {0, 0, 1, 0, 0},
-        {0, 0, 0, 1, 0},
-        {1, 0, 0, 1, 0},
-        {0, 1, 1, 0, 0},
-    },
-    ['4'] = {
-        {0, 0, 1, 1, 0},
-        {0, 1, 0, 1, 0},
-        {1, 0, 0, 1, 0},
-        {1, 1, 1, 1, 1},
-        {0, 0, 0, 1, 0},
-        {0, 0, 0, 1, 0},
-    },
-    ['5'] = {
-        {1, 1, 1, 0, 0},
-        {1, 0, 0, 0, 0},
-        {1, 1, 1, 0, 0},
-        {0, 0, 0, 1, 0},
-        {1, 0, 0, 1, 0},
-        {0, 1, 1, 0, 0},
-    },
-    ['6'] = {
-        {0, 1, 1, 0, 0},
-        {1, 0, 0, 0, 0},
-        {1, 1, 1, 0, 0},
-        {1, 0, 0, 1, 0},
-        {1, 0, 0, 1, 0},
-        {0, 1, 1, 0, 0},
-    },
-    ['7'] = {
-        {1, 1, 1, 1, 0},
-        {0, 0, 0, 1, 0},
-        {0, 0, 1, 0, 0},
-        {0, 1, 0, 0, 0},
-        {0, 1, 0, 0, 0},
-        {0, 1, 0, 0, 0},
-    },
-    ['8'] = {
-        {0, 1, 1, 0, 0},
-        {1, 0, 0, 1, 0},
-        {0, 1, 1, 0, 0},
-        {1, 0, 0, 1, 0},
-        {1, 0, 0, 1, 0},
-        {0, 1, 1, 0, 0},
-
-    },
-    ['9'] = {
-        {0, 1, 1, 0, 0},
-        {1, 0, 0, 1, 0},
-        {1, 0, 0, 1, 0},
-        {0, 1, 1, 1, 0},
-        {0, 0, 0, 1, 0},
-        {0, 1, 1, 0, 0},
-    },
-
-    [','] = {
-        {0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0},
-        {0, 0, 0, 1, 0},
-        {0, 0, 1, 0, 0},
-    },
-
-    ['.'] = {
-        {0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0},
-        {0, 0, 1, 0, 0},
-    },
-    ['-'] = {
-        {0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0},
-        {1, 1, 1, 1, 0},
-        {0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0},
-    },
-};
-
-static Olivec_Font olivec_default_font = {
-    .glyphs = &olivec_default_glyphs[0][0][0],
-    .width = OLIVEC_DEFAULT_FONT_WIDTH,
-    .height = OLIVEC_DEFAULT_FONT_HEIGHT,
-};
 
 // WARNING! Always initialize your Canvas with a color that has Non-Zero Alpha Channel!
 // A lot of functions use `olivec_blend_color()` function to blend with the Background
@@ -420,16 +69,18 @@ OLIVECDEF void olivec_fill(Olivec_Canvas oc, uint32_t color);
 OLIVECDEF void olivec_rect(Olivec_Canvas oc, int x, int y, int w, int h, uint32_t color);
 OLIVECDEF void olivec_frame(Olivec_Canvas oc, int x, int y, int w, int h, size_t thiccness, uint32_t color);
 OLIVECDEF void olivec_circle(Olivec_Canvas oc, int cx, int cy, int r, uint32_t color);
-OLIVECDEF void olivec_ellipse(Olivec_Canvas oc, int cx, int cy, int rx, int ry, uint32_t color);
 // TODO: lines with different thiccness
 OLIVECDEF void olivec_line(Olivec_Canvas oc, int x1, int y1, int x2, int y2, uint32_t color);
 OLIVECDEF bool olivec_normalize_triangle(size_t width, size_t height, int x1, int y1, int x2, int y2, int x3, int y3, int *lx, int *hx, int *ly, int *hy);
 OLIVECDEF bool olivec_barycentric(int x1, int y1, int x2, int y2, int x3, int y3, int xp, int yp, int *u1, int *u2, int *det);
 OLIVECDEF void olivec_triangle(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, uint32_t color);
 OLIVECDEF void olivec_triangle3c(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, uint32_t c1, uint32_t c2, uint32_t c3);
+#ifndef OLIVEC_NO_SSE
+OLIVECDEF void olivec_ellipse(Olivec_Canvas oc, int cx, int cy, int rx, int ry, uint32_t color);
 OLIVECDEF void olivec_triangle3z(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, float z1, float z2, float z3);
 OLIVECDEF void olivec_triangle3uv(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, float tx1, float ty1, float tx2, float ty2, float tx3, float ty3, float z1, float z2, float z3, Olivec_Canvas texture);
 OLIVECDEF void olivec_triangle3uv_bilinear(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, float tx1, float ty1, float tx2, float ty2, float tx3, float ty3, float z1, float z2, float z3, Olivec_Canvas texture);
+#endif //OLIVEC_NO_SSE
 OLIVECDEF void olivec_text(Olivec_Canvas oc, const char *text, int x, int y, Olivec_Font font, size_t size, uint32_t color);
 OLIVECDEF void olivec_sprite_blend(Olivec_Canvas oc, int x, int y, int w, int h, Olivec_Canvas sprite);
 OLIVECDEF void olivec_sprite_copy(Olivec_Canvas oc, int x, int y, int w, int h, Olivec_Canvas sprite);
@@ -588,7 +239,7 @@ OLIVECDEF void olivec_frame(Olivec_Canvas oc, int x, int y, int w, int h, size_t
     olivec_rect(oc, x1 - t/2, y2 + t/2, (x2 - x1 + 1) + t/2*2, -t, color); // Bottom
     olivec_rect(oc, x2 + t/2, y1 - t/2, -t, (y2 - y1 + 1) + t/2*2, color); // Right
 }
-
+#ifndef OLIVEC_NO_SSE
 OLIVECDEF void olivec_ellipse(Olivec_Canvas oc, int cx, int cy, int rx, int ry, uint32_t color)
 {
     Olivec_Normalized_Rect nr = {0};
@@ -608,7 +259,7 @@ OLIVECDEF void olivec_ellipse(Olivec_Canvas oc, int cx, int cy, int rx, int ry, 
         }
     }
 }
-
+#endif //OLIVEC_NO_SSE
 OLIVECDEF void olivec_circle(Olivec_Canvas oc, int cx, int cy, int r, uint32_t color)
 {
     Olivec_Normalized_Rect nr = {0};
@@ -796,7 +447,7 @@ OLIVECDEF void olivec_triangle3c(Olivec_Canvas oc, int x1, int y1, int x2, int y
         }
     }
 }
-
+#ifndef OLIVEC_NO_SSE
 OLIVECDEF void olivec_triangle3z(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, float z1, float z2, float z3)
 {
     int lx, hx, ly, hy;
@@ -871,7 +522,7 @@ OLIVECDEF void olivec_triangle3uv_bilinear(Olivec_Canvas oc, int x1, int y1, int
         }
     }
 }
-
+#endif //OLIVEC_NO_SSE
 // TODO: AA for triangle
 OLIVECDEF void olivec_triangle(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, uint32_t color)
 {
