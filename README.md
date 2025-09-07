@@ -1,5 +1,9 @@
 # Limine C Template
 
+To bootstrap build system run `gcc -o nob nob.c` (nob rebuilds itself on modification)
+
+`./nob -help` to list options
+
 This repository will demonstrate how to set up a basic x86-64 kernel in C using Limine.
 
 It is recommended to cross reference the contents of this repository with [the Limine Bare Bones](https://osdev.wiki/wiki/Limine_Bare_Bones) OSDev wiki page.
@@ -19,10 +23,13 @@ Additionally, building an ISO with `make all` requires `xorriso`, and building a
 The `TOOLCHAIN` and `TOOLCHAIN_PREFIX` `make` variables can be used to set the toolchain. `TOOLCHAIN` can be set to `llvm` to use Clang/LLVM.
 
 For example:
+
 ```
 make TOOLCHAIN=llvm
 ```
+
 or:
+
 ```
 make TOOLCHAIN_PREFIX=x86_64-elf-
 ```
