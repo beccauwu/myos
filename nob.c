@@ -38,7 +38,6 @@ static Procs procs = {0};
 
 static struct {
   bool debug;
-  bool dry_run;
   bool force;
   bool uefi;
   bool run;
@@ -47,26 +46,7 @@ static struct {
   char *cc;
   char *linker;
 } args = {0};
-bool _run_cmd(Cmd *_cmd, Nob_Cmd_Opt opt) {
-  if (args.dry_run) {
-    static String_Builder sb = {0};
-    sb.count = 0;
-    sb_append_cstr(&sb, "-> ");
-    cmd_render(*_cmd, &sb);
-    sb_append_null(&sb);
-    printf("%s\n\n", sb.items);
-    _cmd->count = 0;
-    return true;
-  }
-  Log_Level curr_ll = minimal_log_level;
-  minimal_log_level = INFO;
-  bool res = cmd_run_opt(_cmd, opt);
-  minimal_log_level = curr_ll;
-  return res;
-}
-// #define cmd_run_dry(cmd, ...) _cmd_run_dry((cmd), (Nob_Cmd_Opt){__VA_ARGS__})
 
-#define run_cmd(cmd, ...) _run_cmd((cmd), (Nob_Cmd_Opt){__VA_ARGS__})
 
 #define streq(s1, s2) strcmp((s1), (s2)) == 0
 
@@ -294,7 +274,7 @@ bool build_src(File_Paths *objs) {
     if (ends_with(input, ".asm")) {
       // build rules useless for fasm since there are no options
       cmd_append(&cmd, "fasm", input, output);
-      if (!run_cmd(&cmd, .async = &asmprocs, .max_procs = args.cores))
+      if (!cmd_run(&cmd, .async = &asmprocs, .max_procs = args.cores))
         return_defer(false);
     } else {
       cmd_append(&cmd, args.cc);
@@ -303,7 +283,7 @@ bool build_src(File_Paths *objs) {
       CC_EXTRAS
 
       cmd_append(&cmd, "-o", output, "-c", input);
-      if (!run_cmd(&cmd, .async = &cprocs, .max_procs = args.cores))
+      if (!cmd_run(&cmd, .async = &cprocs, .max_procs = args.cores))
         return_defer(false);
     }
     da_append(objs, output);
@@ -329,12 +309,12 @@ bool build_kernel(void) {
     nob_log(INFO, "kernel up to date!");
     return_defer(true);
   }
-  if (!args.dry_run && !mkdir_if_not_exists(dirname(strdup(KERNEL_BIN))))
+  if (!mkdir_if_not_exists(dirname(strdup(KERNEL_BIN))))
     return_defer(false);
   cmd_append(&cmd, args.linker, LDFLAGS);
   da_append_many(&cmd, objs.items, objs.count);
   cmd_append(&cmd, "-o", KERNEL_BIN);
-  return_defer(run_cmd(&cmd, .async = &procs, .max_procs = args.cores));
+  return_defer(cmd_run(&cmd, .async = &procs, .max_procs = args.cores));
 defer:
   if (!set_current_dir(cwd))
     return false;
@@ -342,20 +322,21 @@ defer:
 }
 
 bool build_limine(void) {
-  if (!file_exists("limine")) {
-    cmd_append(&cmd, "git", "clone",
-               "https://codeberg.org/Limine/Limine.git",
-               "--branch=v9.x-binary", "--depth=1", "limine");
-    if (!run_cmd(&cmd))
-      return false;
-  }
   if (file_exists("limine/limine")){
     nob_log(INFO, "limine up to date!");
     return true;
   }
+  if (!file_exists("limine")) {
+    nob_log(INFO, "Getting limine binaries...");
+    cmd_append(&cmd, "git", "clone",
+               "https://codeberg.org/Limine/Limine.git",
+               "--branch=v9.x-binary", "--depth=1", "limine");
+    if (!cmd_run(&cmd))
+      return false;
+  }
   cmd_append(&cmd, args.cc, "-std=c99", "-ggdb", "-O2", "-pipe", "-o",
              LIMINE_BIN, LIMINE_SRC);
-  return run_cmd(&cmd, .async = &procs, .max_procs = args.cores);
+  return cmd_run(&cmd, .async = &procs, .max_procs = args.cores);
 }
 
 bool get_edk2_ovmf_firmware(void) {
@@ -366,7 +347,7 @@ bool get_edk2_ovmf_firmware(void) {
   cmd_append(&cmd, "curl", "-Lo", OVMF_FIRMWARE,
              "https://github.com/osdev0/edk2-ovmf-nightly/releases/latest/"
              "download/ovmf-code-x86_64.fd");
-  return run_cmd(&cmd);
+  return cmd_run(&cmd);
 }
 
 #define XORRISO_FLAGS                                                          \
@@ -383,8 +364,7 @@ bool build_iso(void) {
     nob_log(INFO, "%s up to date!", KERNEL_ISO);
     return true;
   }
-  if (!args.dry_run) {
-    if (!remove_dir_recurse("iso_root"))
+  if (!remove_dir_recurse("iso_root"))
       return false;
     if (!mkdirs_if_not_exist("iso_root/boot/limine", "iso_root/EFI/BOOT"))
       return false;
@@ -397,13 +377,12 @@ bool build_iso(void) {
     if (!copy_files("iso_root/EFI/BOOT", "limine/BOOTX64.EFI",
                     "limine/BOOTIA32.EFI"))
       return false;
-  }
   cmd_append(&cmd, "xorriso", XORRISO_FLAGS);
   cmd_append(&cmd, "iso_root", "-o", KERNEL_ISO);
-  if (!run_cmd(&cmd))
+  if (!cmd_run(&cmd))
     return false;
   cmd_append(&cmd, "./limine/limine", "bios-install", KERNEL_ISO);
-  if (!run_cmd(&cmd))
+  if (!cmd_run(&cmd))
     return false;
   if (!remove_dir_recurse("iso_root"))
     return false;
@@ -438,7 +417,7 @@ bool run_qemu(void) {
   if (args.debug)
     cmd_append(&cmd, "-s", "-S");
 
-  return run_cmd(&cmd, .async = &procs, .max_procs = args.cores);
+  return cmd_run(&cmd, .async = &procs, .max_procs = args.cores);
 }
 
 bool run_debugger() {
@@ -450,7 +429,7 @@ bool run_debugger() {
   for (size_t i = 0; i < ARRAY_LEN(gdb_commands); ++i) {
     cmd_append(&cmd, "-ex", gdb_commands[i]);
   }
-  return run_cmd(&cmd, .async = &procs, .max_procs = args.cores);
+  return cmd_run(&cmd, .async = &procs, .max_procs = args.cores);
 }
 
 void usage(FILE *stream) {
@@ -519,7 +498,6 @@ bool parse_options(int argc, char **argv) {
   char **linker = flag_str("linker", "ld", "Linker path");
 
   size_t *cores = flag_uint64("j", nob_nprocs() + 1, "Number of parallel jobs");
-  bool *dry_run = flag_bool("dry-run", false, "Dry run the compilation");
 
   bool *verbose = flag_bool("v", false, "Print with verbose log level");
   bool *force = flag_bool("B", false, "Force rebuild kernel");
@@ -544,7 +522,6 @@ bool parse_options(int argc, char **argv) {
       return false;
   }
   args.cc = *cc;
-  args.dry_run = *dry_run;
   args.force = *force;
   args.linker = *linker;
   args.cores = *cores;
