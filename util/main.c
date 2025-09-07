@@ -186,6 +186,8 @@ int main(int argc, char **argv) {
   uint32_t *data =
       (uint32_t *)stbi_load(fname, &x, &y, &n, STBI_rgb_alpha);
   char *font_upper = strupper(cfg.name);
+  fprintf(ostream,"#ifndef _%s_H\n", font_upper);
+  fprintf(ostream,"#define _%s_H\n", font_upper);
   fprintf(ostream,"#define %s_GLYPH_WIDTH %d\n", font_upper, cfg.w - cfg.margins[0] - cfg.margins[1]);
   fprintf(ostream,"#define %s_GLYPH_HEIGHT %d\n",font_upper, cfg.h - cfg.margins[2] - cfg.margins[3]);
   fprintf(ostream,"static char %s_glyphs[128][%s_GLYPH_HEIGHT][%s_GLYPH_WIDTH] = {\n",cfg.name,font_upper,font_upper);
@@ -237,6 +239,7 @@ int main(int argc, char **argv) {
   fprintf(ostream,"\t.width  = %s_GLYPH_WIDTH,\n", font_upper);
   fprintf(ostream,"\t.height = %s_GLYPH_HEIGHT,\n", font_upper);
   fprintf(ostream,"};\n");
+  fprintf(ostream,"#endif // _%s_H\n", font_upper);
 done:
   if(close_on_exit) {
     fflush(ostream);
