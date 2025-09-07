@@ -344,8 +344,8 @@ defer:
 bool build_limine(void) {
   if (!file_exists("limine")) {
     cmd_append(&cmd, "git", "clone",
-               "https://github.com/limine-bootloader/limine.git",
-               "--branch=v9.x-binary", "--depth=1");
+               "https://codeberg.org/Limine/Limine.git",
+               "--branch=v9.x-binary", "--depth=1", "limine");
     if (!run_cmd(&cmd))
       return false;
   }
