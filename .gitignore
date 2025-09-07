@@ -5,3 +5,5 @@
 *.hdd
 /.cache
 compile_commands.json
+nob
+nob.old
