@@ -6,6 +6,7 @@
 #define FLAG_IMPLEMENTATION
 #include "flag.h"
 #define GLOB_IMPLEMENTATION
+#include "config.h"
 #include "glob.h"
 #include <errno.h>
 #include <ftw.h>
@@ -16,11 +17,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#define KERNEL_ISO    "kernel.iso"
-#define LIMINE_BIN    "limine/limine"
-#define LIMINE_SRC    "limine/limine.c"
-#define KERNEL_BIN    "kernel/bin/kernel"
-#define OVMF_FIRMWARE "ovmf/ovmf-code-x86_64.fd"
 static Cmd   cmd   = { 0 };
 static Procs procs = { 0 };
 /* check for matching filename with suffix */
@@ -41,18 +37,6 @@ static Procs procs = { 0 };
     }                                      \
     cmd_append(&cmd, (keep), __VA_ARGS__); \
   }
-/* per-file extra compiler arguments */
-#define CC_EXTRAS                                            \
-  CC_END("olive.c",                                          \
-         "-DOLIVECDEF=extern",                               \
-         "-DOLIVEC_NO_SSE",                                  \
-         "-Wno-missing-braces",                              \
-         "-DOLIVEC_IMPLEMENTATION",                          \
-         "-O3")                                              \
-  CC_END("stdio.c", "-DOLIVECDEF=extern", "-DOLIVEC_NO_SSE") \
-  CC_END("printf.c",                                         \
-         "-DPRINTF_DISABLE_SUPPORT_EXPONENTIAL",             \
-         "-DPRINTF_DISABLE_SUPPORT_FLOAT")
 
 static struct {
   bool   debug;
@@ -265,17 +249,6 @@ bool _mkdirs_if_not_exist(char **dirs) {
   _mkdirs_if_not_exist(((char *[]) { __VA_ARGS__, NULL }))
 #define remove_files(...) _remove_files(((char *[]) { __VA_ARGS__, NULL }))
 
-#define SRC_CFLAGS                                                            \
-  "-Wall", "-Wextra", "-std=gnu23", "-nostdinc", "-ffreestanding",            \
-    "-fno-stack-protector", "-fno-stack-check", "-fno-lto", "-fno-PIC",       \
-    "-ffunction-sections", "-fdata-sections", "-m64", "-march=x86-64",        \
-    "-mabi=sysv", "-mno-80387", "-mno-mmx", "-mno-sse", "-mno-sse2",          \
-    "-mno-red-zone", "-ggdb", "-mcmodel=kernel", "-O2", "-pipe", "-I", "src", \
-    "-I", "limine-protocol/include", "-I", "external", "-isystem",            \
-    "freestnd-c-hdrs/include", "-DLIMINE_API_REVISION=3", "-MMD", "-MP"
-#define KERNEL_LDFLAGS                                                      \
-  "-m", "elf_x86_64", "-nostdlib", "-static", "-z", "max-page-size=0x1000", \
-    "--gc-sections", "-T", "linker-scripts/x86_64.lds"
 bool build_src(File_Paths *objs) {
   File_Paths src_files = { 0 };
   File_Paths dep_files = { 0 };
@@ -402,12 +375,6 @@ bool get_edk2_ovmf_firmware(void) {
   return cmd_run(&cmd);
 }
 
-#define XORRISO_FLAGS                                                          \
-  "-as", "mkisofs", "-R", "-r", "-J", "-b", "boot/limine/limine-bios-cd.bin",  \
-    "-no-emul-boot", "-boot-load-size", "4", "-boot-info-table", "-hfsplus",   \
-    "-apm-block-size", "2048", "--efi-boot", "boot/limine/limine-uefi-cd.bin", \
-    "-efi-boot-part", "--efi-boot-image", "--protective-msdos-label"
-
 bool build_iso(void) {
   if(!needs_rebuild(
        KERNEL_ISO, (const char *[]) { KERNEL_BIN, LIMINE_BIN }, 2)) {
@@ -452,13 +419,6 @@ bool build_all(void) {
   return true;
 }
 
-#define QEMU_FLAGS_ISO \
-  "-M", "q35", "-cdrom", KERNEL_ISO, "-boot", "d", "-m", "2G"
-
-#define QEMU_FLAGS_UEFI                                               \
-  "-M", "q35", "-drive",                                              \
-    "if=pflash,unit=0,format=raw,file=" OVMF_FIRMWARE ",readonly=on", \
-    "-cdrom", KERNEL_ISO, "-boot", "d"
 bool run_qemu(void) {
   if(args.uefi) {
     if(!get_edk2_ovmf_firmware())
@@ -512,7 +472,8 @@ static inline char *program_name(void) {
 void print_usage(FILE *);
 
 void run_subcmd_usage(void *ctx, FILE *stream) {
-  fprintf(stream, "Usage: %s run [OPTIONS]\n", program_name());
+  fprintf(stream, "Usage: %s run [OPTIONS]\n\n", program_name());
+  fprintf(stream, "Launches kernel in qemu after building\n");
   fprintf(stream, "OPTIONS:\n");
   flag_c_print_options(ctx, stream);
 }
@@ -568,7 +529,7 @@ bool clean_subcmd_flags(void *ctx, int argc, char **argv) {
     clean_subcmd_usage(ctx, stderr);
     return false;
   }
-  if(!remove_outputs()) {
+  if(!remove_outputs(keeps)) {
     nob_log(ERROR, "Failed to remove outputs");
   } else {
     nob_log(INFO, "Removed all output files!");
@@ -630,8 +591,8 @@ bool parse_options(int argc, char **argv) {
   char  **linker  = flag_str("linker", "ld", "Linker path");
   bool   *verbose = flag_bool("v", false, "Print with verbose log level");
   bool   *force   = flag_bool("B", false, "Force rebuild kernel");
+  size_t *cores   = flag_uint64("j", nprocs() + 1, "Number of parallel jobs");
   bool   *help    = flag_bool("help", false, "Print this help message");
-  size_t *cores = flag_uint64("j", nob_nprocs() + 1, "Number of parallel jobs");
   // if (!*verbose) {
   //   minimal_log_level = WARNING;
   // }
@@ -659,7 +620,7 @@ bool parse_options(int argc, char **argv) {
 }
 
 int main(int argc, char **argv) {
-  NOB_GO_REBUILD_URSELF(argc, argv);
+  NOB_GO_REBUILD_URSELF_PLUS(argc, argv, "config.h");
   if(!parse_options(argc, argv))
     return false;
   if(!build_all())
