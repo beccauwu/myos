@@ -6,7 +6,6 @@
 #define FLAG_IMPLEMENTATION
 #include "flag.h"
 #define GLOB_IMPLEMENTATION
-#include "config.h"
 #include "glob.h"
 #include <errno.h>
 #include <ftw.h>
@@ -16,7 +15,50 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#define LIMINE_BIN    "limine/limine"
+#define LIMINE_SRC    "limine/limine.c"
+#define OVMF_FIRMWARE "ovmf/ovmf-code-x86_64.fd"
+#define LINKER_SCRIPT "linker-scripts/x86_64.lds"
+/* per-file extra compiler arguments */
+#define CC_EXTRAS                                            \
+  CC_END("olive.c",                                          \
+         "-DOLIVECDEF=extern",                               \
+         "-DOLIVEC_NO_SSE",                                  \
+         "-Wno-missing-braces",                              \
+         "-DOLIVEC_IMPLEMENTATION",                          \
+         "-O3")                                              \
+  CC_END("stdio.c", "-DOLIVECDEF=extern", "-DOLIVEC_NO_SSE") \
+  CC_END("printf.c",                                         \
+         "-DPRINTF_DISABLE_SUPPORT_EXPONENTIAL",             \
+         "-DPRINTF_DISABLE_SUPPORT_FLOAT")
 
+#define KERNEL_ISO    "kernel.iso"
+
+#define KERNEL_BIN    "kernel/bin/kernel"
+
+#define SRC_CFLAGS                                                            \
+  "-Wall", "-Wextra", "-std=gnu23", "-nostdinc", "-ffreestanding",            \
+    "-fno-stack-protector", "-fno-stack-check", "-fno-lto", "-fno-PIC",       \
+    "-ffunction-sections", "-fdata-sections", "-m64", "-march=x86-64",        \
+    "-mabi=sysv", "-mno-80387", "-mno-mmx", "-mno-sse", "-mno-sse2",          \
+    "-mno-red-zone", "-ggdb", "-mcmodel=kernel", "-O2", "-pipe", "-I", "src", \
+    "-I", "limine-protocol/include", "-I", "external", "-isystem",            \
+    "freestnd-c-hdrs/include", "-DLIMINE_API_REVISION=3", "-MMD", "-MP"
+#define KERNEL_LDFLAGS                                                      \
+  "-m", "elf_x86_64", "-nostdlib", "-static", "-z", "max-page-size=0x1000", \
+    "--gc-sections", "-T", LINKER_SCRIPT
+#define XORRISO_FLAGS                                                          \
+  "-as", "mkisofs", "-R", "-r", "-J", "-b", "boot/limine/limine-bios-cd.bin",  \
+    "-no-emul-boot", "-boot-load-size", "4", "-boot-info-table", "-hfsplus",   \
+    "-apm-block-size", "2048", "--efi-boot", "boot/limine/limine-uefi-cd.bin", \
+    "-efi-boot-part", "--efi-boot-image", "--protective-msdos-label"
+#define QEMU_FLAGS_ISO \
+  "-M", "q35", "-cdrom", KERNEL_ISO, "-boot", "d", "-m", "2G"
+
+#define QEMU_FLAGS_UEFI                                               \
+  "-M", "q35", "-drive",                                              \
+    "if=pflash,unit=0,format=raw,file=" OVMF_FIRMWARE ",readonly=on", \
+    "-cdrom", KERNEL_ISO, "-boot", "d"
 static Cmd   cmd   = { 0 };
 static Procs procs = { 0 };
 /* check for matching filename with suffix */
@@ -66,6 +108,7 @@ bool _ends_with_any(const char *str, char **suffixes) {
     if(ends_with(str, *suffixes))
       return true;
   }
+  return false;
 }
 #define ends_with_any(str, ...) \
   _ends_with_any(str, ((char *[]) { __VA_ARGS__, NULL }))
@@ -550,7 +593,7 @@ static const struct {
 #define max(a, b) ((a) < (b) ? (b) : (a))
 
 void print_usage(FILE *stream) {
-  fprintf(stream, "\nBuild tool for ~insert os name~\n\n", program_name());
+  fprintf(stream, "\nBuild tool for ~insert os name~\n\n");
   fprintf(stream, "Usage: %s [OPTIONS] <command>\n", program_name());
   fprintf(stream, "\nOPTIONS:\n");
   flag_print_options(stream);
@@ -620,9 +663,9 @@ bool parse_options(int argc, char **argv) {
 }
 
 int main(int argc, char **argv) {
-  NOB_GO_REBUILD_URSELF_PLUS(argc, argv, "config.h");
+  NOB_GO_REBUILD_URSELF(argc, argv);
   if(!parse_options(argc, argv))
-    return false;
+    return 1;
   if(!build_all())
     return 1;
   if(args.run) {
