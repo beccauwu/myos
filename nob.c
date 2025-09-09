@@ -391,6 +391,7 @@ bool build_limine(void) {
                "limine");
     if(!cmd_run(&cmd))
       return false;
+    if(!remove_file("limine/.git")) return false;
   }
   cmd_append(&cmd,
              args.cc,
