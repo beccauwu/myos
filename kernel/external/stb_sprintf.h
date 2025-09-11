@@ -637,14 +637,14 @@ STBSP__PUBLICDEF int
       } break;
 
   #ifdef STB_SPRINTF_NOFLOAT
-      case 'A':              // float
-      case 'a':              // hex float
-      case 'G':              // float
-      case 'g':              // float
-      case 'E':              // float
-      case 'e':              // float
-      case 'f':              // float
-        va_arg(va, double);  // eat it
+      case 'A':                     // float
+      case 'a':                     // hex float
+      case 'G':                     // float
+      case 'g':                     // float
+      case 'E':                     // float
+      case 'e':                     // float
+      case 'f':                     // float
+        va_arg(va, stbsp__uint64);  // eat it
         s       = (char *)"No float";
         l       = 8;
         lead[0] = 0;
