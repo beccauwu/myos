@@ -20,21 +20,24 @@
 #define OVMF_FIRMWARE "ovmf/ovmf-code-x86_64.fd"
 #define LINKER_SCRIPT "linker-scripts/x86_64.lds"
 /* per-file extra compiler arguments */
-#define CC_EXTRAS                                            \
-  CC_END("olive.c",                                          \
-         "-DOLIVECDEF=extern",                               \
-         "-DOLIVEC_NO_SSE",                                  \
-         "-Wno-missing-braces",                              \
-         "-DOLIVEC_IMPLEMENTATION",                          \
-         "-O3")                                              \
-  CC_END("stdio.c", "-DOLIVECDEF=extern", "-DOLIVEC_NO_SSE") \
-  CC_END("printf.c",                                         \
-         "-DPRINTF_DISABLE_SUPPORT_EXPONENTIAL",             \
-         "-DPRINTF_DISABLE_SUPPORT_FLOAT")
+#define CC_EXTRAS
+//   CC_END("printf.c",                             \
+//          "-DPRINTF_DISABLE_SUPPORT_EXPONENTIAL", \
+//          "-DPRINTF_DISABLE_SUPPORT_FLOAT")
 
-#define KERNEL_ISO    "kernel.iso"
+#define HEADER_LIBRARIES              \
+  HEADER_LIB("olive.c",               \
+             "OLIVEC_IMPLEMENTATION", \
+             "-DOLIVECDEF=extern",    \
+             "-DOLIVEC_NO_SSE",       \
+             "-Wno-missing-braces",   \
+             "-O3")                   \
+  HEADER_LIB(                         \
+    "stb_sprintf.h", "STB_SPRINTF_IMPLEMENTATION", "-DSTB_SPRINTF_NOFLOAT")
 
-#define KERNEL_BIN    "kernel/bin/kernel"
+#define KERNEL_ISO "kernel.iso"
+
+#define KERNEL_BIN "kernel/bin/kernel"
 
 #define SRC_CFLAGS                                                            \
   "-Wall", "-Wextra", "-std=gnu23", "-nostdinc", "-ffreestanding",            \
@@ -61,6 +64,22 @@
     "-cdrom", KERNEL_ISO, "-boot", "d"
 static Cmd   cmd   = { 0 };
 static Procs procs = { 0 };
+#define HEADER_LIB(n, impl, ...)                                  \
+  if(ends_with(input, (n))) {                                     \
+    stb = true;                                                   \
+    cmd_append(&cmd, args.cc, "-x", "c");                         \
+    size_t count_before = cmd.count;                              \
+    cmd_append(&cmd, "-D" impl, __VA_ARGS__);                     \
+    cmd_append(&cmd, SRC_CFLAGS);                                 \
+    if(cmd.count <= count_before) {                               \
+      cmd.count = 0;                                              \
+      continue;                                                   \
+    }                                                             \
+    cmd_append(&cmd, "-o", output, "-c", input);                  \
+    if(!cmd_run(&cmd, .async = &cprocs, .max_procs = args.cores)) \
+      return_defer(false);                                        \
+    goto loop_end;                                                \
+  }
 /* check for matching filename with suffix */
 #define CC_END(n, keep, ...)               \
   if(ends_with(input, (n))) {              \
@@ -308,16 +327,18 @@ bool build_src(File_Paths *objs) {
   for(size_t i = 0; i < src_files.count; ++i) {
     dep_files.count   = 0;
     const char *input = src_files.items[i];
-    if(!ends_with_any(input, ".c", ".asm", ".S"))
+    if(!ends_with_any(input, ".c", ".asm", ".S", ".h"))
       continue;
     const char *output  = temp_sprintf("obj/%s.o", input);
     const char *depfile = temp_sprintf("obj/%s.d", input);
     // apparently dirname fucks with the string :3
     const char *dir = dirname(strdup(output));
-    if(args.force || !file_exists(depfile))
+    da_append(&dep_files, output);
+    if(args.force)
       goto commands;
-    if(!parse_deps(depfile, &dep_files))
-      return_defer(false);
+    if(file_exists(depfile))
+      if(!parse_deps(depfile, &dep_files))
+        return_defer(false);
     if(!needs_rebuild(output, dep_files.items, dep_files.count))
       goto loop_end;
   commands:
@@ -325,6 +346,10 @@ bool build_src(File_Paths *objs) {
     minimal_log_level = WARNING;
     mkdir_if_not_exists_p(dir);
     minimal_log_level = curr_ll;
+    bool stb          = false;
+    HEADER_LIBRARIES
+    if(!stb && ends_with(input, ".h"))
+      continue;
     if(ends_with(input, ".asm")) {
       cmd_append(&cmd, "fasm", input, output);
       if(!cmd_run(&cmd, .async = &asmprocs, .max_procs = args.cores))
@@ -391,7 +416,8 @@ bool build_limine(void) {
                "limine");
     if(!cmd_run(&cmd))
       return false;
-    if(!remove_file("limine/.git")) return false;
+    if(!remove_file("limine/.git"))
+      return false;
   }
   cmd_append(&cmd,
              args.cc,
